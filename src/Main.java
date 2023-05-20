@@ -1,38 +1,38 @@
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
-
-    public static void main(String[] args) throws IOException {
-        File dir = new File("C://Users//Beth//Desktop");
-        countWords(dir);
-    }
-
-    private static void countWords(File dir) throws IOException {
-        File[] files = dir.listFiles();
-        int count = 0;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                countWords(file);
-            } else if (file.getName().endsWith(".txt")) {
-                int lineCount = 0;
-                FileInputStream fis = new FileInputStream(file);
-                BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String[] words = line.split("\\s+");
-                    lineCount += words.length;
-                }
-                System.out.printf("Файл %s содержит %d слов.\n", file.getName(), lineCount);
-                count += lineCount;
-                br.close();
-                fis.close();
-                System.out.printf("Общее количество слов во всех файлов: %d\n", count);
+    public static void main(String[] args) {
+        Map<String, Integer> freqDict = new HashMap<>();
+        File folder = new File("C://Users//Beth//Desktop");
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        for (File file : folder.listFiles()) {
+            if (file.getName().toLowerCase().endsWith(".txt")) {
+                executor.execute(() -> processFile(file, freqDict));
             }
         }
-
+        executor.shutdown();
+        while (!executor.isTerminated()) {
+            // wait for all tasks to finish
+        }
+        List<Map.Entry<String, Integer>> sortedList = new ArrayList<>(freqDict.entrySet());
+        sortedList.sort(Collections.reverseOrder(Map.Entry.comparingByValue()));
+        for (int i = 0; i < sortedList.size() && i < sortedList.size(); i++) {
+            System.out.println(sortedList.get(i).getKey() + " : " + sortedList.get(i).getValue());
+        }
+    }
+    private static void processFile(File file, Map<String, Integer> freqDict) {
+        try (Scanner input = new Scanner(file)) {
+            while (input.hasNext()) {
+                String word = input.next();
+                word = word.replaceAll("[^A-Za-zА-Яа-я]", "").toLowerCase();
+                freqDict.put(file.getPath() + ' ' + word, freqDict.getOrDefault(word, 0) + 1);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
