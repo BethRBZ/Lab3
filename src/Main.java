@@ -16,7 +16,6 @@ public class Main {
         }
         executor.shutdown();
         while (!executor.isTerminated()) {
-            // wait for all tasks to finish
         }
         List<Map.Entry<String, Integer>> sortedList = new ArrayList<>(freqDict.entrySet());
         sortedList.sort(Collections.reverseOrder(Map.Entry.comparingByValue()));
